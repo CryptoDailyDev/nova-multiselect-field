@@ -116,6 +116,74 @@ export default {
   }),
 
   mounted() {
+    if (window.location.href.includes('resources/posts')) {
+      const postSetup = () => {
+        setTimeout(() => {
+          const input = document.querySelector('.multiselect__input');
+
+          if (input) {
+            input.addEventListener('paste', (event) => {
+              const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+
+              if (pastedText.indexOf(',') !== -1) {
+                event.preventDefault();
+
+                const phrases = pastedText.split(',').map(phrase => phrase.trim());
+                const phrasesLower = phrases.map(phrase => phrase.toLowerCase());
+
+                const list = document.querySelector('.multiselect__content');
+                const found = [];
+                const missed = [];
+
+                list.querySelectorAll('.multiselect__option').forEach((li) => {
+                  const text = li.textContent.trim();
+                  const textLower = text.toLowerCase();
+
+                  if (phrases.indexOf(text) !== -1) {
+                    if (!found.includes(phrases.indexOf(text))) {
+                      found.push(phrases.indexOf(text));
+                      if (!li.classList.contains('multiselect__option--selected')) {
+                        setTimeout(() => {
+                          li.click();
+                        }, 0);
+                      }
+                    }
+                  } else if (phrasesLower.indexOf(textLower) !== -1) {
+                    if (!found.includes(phrasesLower.indexOf(textLower))) {
+                      found.push(phrasesLower.indexOf(textLower));
+                      if (!li.classList.contains('multiselect__option--selected')) {
+                        setTimeout(() => {
+                          li.click();
+                        }, 0);
+                      }
+                    }
+                  }
+                });
+
+                phrases.forEach((value, key) => {
+                  if (!found.includes(key)) {
+                    missed.push(value);
+                  }
+                });
+
+                if (missed.length > 0) {
+                  const spaceBar = new KeyboardEvent("keydown", {key: " ", keyCode: 32, which: 32});
+
+                  missed.forEach((value) => {
+                    this.addTag(value);
+                  });
+                }
+              }
+            });
+          }
+
+          console.log('post keywords setup finished');
+        }, 2000);
+      };
+
+      postSetup();
+    }
+
     window.addEventListener('scroll', this.repositionDropdown);
     this.onSyncedField();
 
